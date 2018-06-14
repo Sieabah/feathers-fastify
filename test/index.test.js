@@ -1,14 +1,14 @@
 const assert = require('assert');
-const express = require('express');
+const fastify = require('fastify');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const feathers = require('@feathersjs/feathers');
 
-const expressify = require('../lib');
+const fastifyify = require('../lib');
 
-describe('@feathersjs/express', () => {
+describe('feathers-fastify', () => {
   const service = {
     get (id) {
       return Promise.resolve({ id });
@@ -16,25 +16,25 @@ describe('@feathersjs/express', () => {
   };
 
   it('exports .default, .original .rest, .notFound and .errorHandler', () => {
-    assert.equal(expressify.default, expressify);
-    assert.equal(expressify.original, express);
-    assert.equal(typeof expressify.rest, 'function');
-    assert.equal(expressify.errorHandler, require('@feathersjs/errors/handler'));
-    assert.equal(expressify.notFound, require('@feathersjs/errors/not-found'));
+    assert.equal(fastifyify.default, fastifyify);
+    assert.equal(fastifyify.original, fastify);
+    assert.equal(typeof fastifyify.rest, 'function');
+    assert.equal(fastifyify.errorHandler, require('@feathersjs/errors/handler'));
+    assert.equal(fastifyify.notFound, require('@feathersjs/errors/not-found'));
   });
 
-  it('returns an Express application', () => {
-    const app = expressify(feathers());
+  it('returns an Fastify application', () => {
+    const app = fastifyify(feathers());
 
     assert.equal(typeof app, 'function');
   });
 
-  it('exports `express.rest`', () => {
-    assert.ok(typeof expressify.rest === 'function');
+  it('exports `fastify.rest`', () => {
+    assert.ok(typeof fastifyify.rest === 'function');
   });
 
-  it('returns a plain express app when no app is provided', () => {
-    const app = expressify();
+  it('returns a plain fastify app when no app is provided', () => {
+    const app = fastifyify();
 
     assert.equal(typeof app.use, 'function');
     assert.equal(typeof app.service, 'undefined');
@@ -43,46 +43,46 @@ describe('@feathersjs/express', () => {
 
   it('errors when app with wrong version is provided', () => {
     try {
-      expressify({});
+      fastifyify({});
     } catch (e) {
-      assert.equal(e.message, '@feathersjs/express requires a valid Feathers application instance');
+      assert.equal(e.message, '@feathersjs/fastify requires a valid Feathers application instance');
     }
 
     try {
       const app = feathers();
       app.version = '2.9.9';
 
-      expressify(app);
+      fastifyify(app);
     } catch (e) {
-      assert.equal(e.message, '@feathersjs/express requires an instance of a Feathers application version 3.x or later (got 2.9.9)');
+      assert.equal(e.message, '@feathersjs/fastify requires an instance of a Feathers application version 3.x or later (got 2.9.9)');
     }
 
     try {
       const app = feathers();
       delete app.version;
 
-      expressify(app);
+      fastifyify(app);
     } catch (e) {
-      assert.equal(e.message, '@feathersjs/express requires an instance of a Feathers application version 3.x or later (got unknown)');
+      assert.equal(e.message, '@feathersjs/fastify requires an instance of a Feathers application version 3.x or later (got unknown)');
     }
   });
 
-  it('Can use Express sub-apps', () => {
-    const app = expressify(feathers());
-    const child = express();
+  it('Can use Fastify sub-apps', () => {
+    const app = fastifyify(feathers());
+    const child = fastify();
 
     app.use('/path', child);
     assert.equal(child.parent, app);
   });
 
-  it('Can use express.static', () => {
-    const app = expressify(feathers());
+  it('Can use fastify.static', () => {
+    const app = fastifyify(feathers());
 
-    app.use('/path', expressify.static(__dirname));
+    app.use('/path', fastifyify.static(__dirname));
   });
 
   it('has Feathers functionality', () => {
-    const app = expressify(feathers());
+    const app = fastifyify(feathers());
 
     app.use('/myservice', service);
 
@@ -110,8 +110,8 @@ describe('@feathersjs/express', () => {
       }));
   });
 
-  it('can register a service and start an Express server', done => {
-    const app = expressify(feathers());
+  it('can register a service and start an Fastify server', done => {
+    const app = fastifyify(feathers());
     const response = {
       message: 'Hello world'
     };
@@ -130,7 +130,7 @@ describe('@feathersjs/express', () => {
   });
 
   it('.listen calls .setup', done => {
-    const app = expressify(feathers());
+    const app = fastifyify(feathers());
     let called = false;
 
     app.use('/myservice', {
@@ -161,7 +161,7 @@ describe('@feathersjs/express', () => {
 
   it('passes middleware as options', () => {
     const feathersApp = feathers();
-    const app = expressify(feathersApp);
+    const app = fastifyify(feathersApp);
     const oldUse = feathersApp.use;
     const a = (req, res, next) => next();
     const b = (req, res, next) => next();
@@ -187,7 +187,7 @@ describe('@feathersjs/express', () => {
 
   it('throws an error for invalid middleware options', () => {
     const feathersApp = feathers();
-    const app = expressify(feathersApp);
+    const app = fastifyify(feathersApp);
     const service = {
       get (id) {
         return Promise.resolve({ id });
@@ -211,8 +211,8 @@ describe('@feathersjs/express', () => {
       }
     };
 
-    const app = expressify(feathers())
-      .configure(expressify.rest())
+    const app = fastifyify(feathers())
+      .configure(fastifyify.rest())
       .use('/secureTodos', todoService);
 
     const httpsServer = https.createServer({
